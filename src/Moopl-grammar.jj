@@ -24,12 +24,45 @@ SKIP : /* Define white-space and comments here */
 
 TOKEN : /* Define the Moopl tokens here. */
 {
+//keyword
   < PROC: "proc" >
 | < FUN: "fun" >
 | < CLASS: "class" >
+| < EXTENDS: "extends" >
+| < RETURN: "return" >
+| < BOOLEAN: "boolean" >
+| < TRUE: "true" >
+| < FALSE: "false" >
+| < SELF: "self" >
+| < INT: "int" >
+| < ARRAYOF: "arrayof" >
+| < IF: "if" >
+| < THEN: "then" >
+| < ELSE: "else" >
+| < WHILE: "while" >
+| < DO: "do" >
+| < OUTPUT: "output" >
+| < LENGTH: "length" >
+| < NEW: "new" >
+| < OBJECT: "object" >
+| < ISNULL: "isnull" >
+//punctuation
+| < DOT: "." >
+| < COMMA: "," >
+| < EQUALS: "=" >
+| < OPENSBR: "[" >
+| < CLOSESBR: "]" >
+| < OPENBRACE: "{" >
+| < CLOSEBRACE: "}" >
+| < OPENPAREN: "(" >
+| < CLOSEPAREN: ")" >
+| < ENDSTAT: ";" >
+| < NOT: "!" >
+ 
 
 // LOTS OF TOKENS MISSING HERE!
 
+| < OP: ("and"|"div"|"<"|"=="|"+"|"-"|"*") >
 | < INTEGER_LITERAL: (["0"-"9"])+ >
 | < ID: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])* >
 }
@@ -45,6 +78,37 @@ public void testTokens() :
   ( ( ( t = <PROC>
       | t = <FUN>
       | t = <CLASS>
+      | t = <OP>
+      | t = <EXTENDS>
+      | t = <RETURN>
+      | t = <BOOLEAN>
+      | t = <TRUE>
+      | t = <FALSE>
+      | t = <SELF>
+      | t = <INT>
+      | t = <ARRAYOF>
+      | t = <IF>
+      | t = <THEN>
+      | t = <ELSE>
+      | t = <WHILE>
+      | t = <DO>
+      | t = <OUTPUT>
+      | t = <LENGTH>
+      | t = <NEW>
+      | t = <OBJECT>
+      | t = <ISNULL>
+      | t = <DOT>
+      | t = <COMMA>
+      | t = <EQUALS>
+      | t = <OPENSBR>
+      | t = <CLOSESBR>
+      | t = <OPENBRACE>
+      | t = <CLOSEBRACE>
+      | t = <OPENPAREN>
+      | t = <CLOSEPAREN>
+      | t = <ENDSTAT>
+      | t = <NOT>
+
         // ADD YOUR OWN TOKENS HERE AS YOU DEFINE EACH ONE
       )
       { System.out.println("Recognised as valid token: " + t.image); }
