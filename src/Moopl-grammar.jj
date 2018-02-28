@@ -30,7 +30,7 @@ TOKEN : /* Define the Moopl tokens here. */
 | < CLASS: "class" >
 | < EXTENDS: "extends" >
 | < RETURN: "return" >
-| < BOOLEAN: "boolean" >
+| < BOOL: "boolean" >
 | < TRUE: "true" >
 | < FALSE: "false" >
 | < SELF: "self" >
@@ -56,9 +56,8 @@ TOKEN : /* Define the Moopl tokens here. */
 | < CLOSEBRACE: "}" >
 | < OPENPAREN: "(" >
 | < CLOSEPAREN: ")" >
-| < ENDSTAT: ";" >
+| < ENDLINE: ";" >
 | < NOT: "!" >
- 
 
 // LOTS OF TOKENS MISSING HERE!
 
@@ -81,7 +80,7 @@ public void testTokens() :
       | t = <OP>
       | t = <EXTENDS>
       | t = <RETURN>
-      | t = <BOOLEAN>
+      | t = <BOOL>
       | t = <TRUE>
       | t = <FALSE>
       | t = <SELF>
@@ -106,7 +105,7 @@ public void testTokens() :
       | t = <CLOSEBRACE>
       | t = <OPENPAREN>
       | t = <CLOSEPAREN>
-      | t = <ENDSTAT>
+      | t = <ENDLINE>
       | t = <NOT>
 
         // ADD YOUR OWN TOKENS HERE AS YOU DEFINE EACH ONE
@@ -137,13 +136,14 @@ public void nt_Program() :
 public void nt_ClassDecl() :
 {}
 { 
-  <CLASS> // TODO: ADD MISSING CASES
+  <CLASS> <ID> (<OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>
+  | <EXTENDS> <ID> <OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>)
 }
 
 public void nt_MethodDecl() :
 {}
 {
-    nt_ProcDecl() | nt_FunDecl()
+  nt_ProcDecl() | nt_FunDecl()
 }
 
 public void nt_FunDecl() :
@@ -161,10 +161,92 @@ public void nt_ProcDecl() :
 public void nt_PrimaryExp() :
 {}
 {
-  <INTEGER_LITERAL> // TODO: ADD MISSING CASES
+  <INTEGER_LITERAL> 
+| <TRUE>
+| <FALSE>
+| nt_Var()
+| <SELF>
+| LOOKAHEAD (2) 
+  <NEW> <ARRAYOF> <OPENPAREN> nt_Type() <CLOSEPAREN> <OPENSBR> nt_Exp() <CLOSESBR>
+| <NEW> <OBJECT> <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>
+| <NOT> nt_PrimaryExp()
+| <OPENPAREN> nt_Exp() <CLOSEPAREN>
+
 }
 
 // TODO: ADD MISSING NON_TERMINALS
+
+public void nt_FormalList() :
+{}  
+{
+  (nt_Type() <ID> (nt_FormalRest())*)*
+}
+
+public void nt_FormalRest() :
+{}
+{
+  <COMMA> nt_Type() <ID>
+}
+
+public void nt_Statement() :
+{} //TODO : IMPLEMENT
+{
+  nt_Block()
+| LOOKAHEAD (2) //type and var could both start with ID
+  nt_Type() <ID> <ENDLINE>
+| LOOKAHEAD (2) //primaryexp could start with ID, but won't have an EQUALS after
+  nt_Var() <EQUALS> nt_Exp() <ENDLINE>
+| nt_PrimaryExp() (<OPENSBR> nt_Exp() <CLOSESBR> <EQUALS> nt_Exp() <ENDLINE>
+                  | <DOT> <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>)
+| <IF> <OPENPAREN> <THEN> nt_Block() <ELSE> nt_Block()
+| <WHILE> <OPENPAREN> nt_Exp() <CLOSEPAREN> <DO> nt_Block()
+| <OUTPUT> nt_Exp() <ENDLINE>
+}
+
+public void nt_Block() :
+{} 
+{
+  <OPENBRACE> (nt_Statement())* <CLOSEBRACE>
+}
+
+public void nt_Exp() :
+{} //TODO : IMPLEMENT
+{
+  <ID>
+}
+
+public void nt_Type() :
+{}
+{
+  <ARRAYOF> <OPENPAREN> nt_Type() <CLOSEPAREN>
+| <BOOL>
+| <INT>
+| <ID>
+}
+
+public void nt_FieldDecl() :
+{}
+{
+  nt_Type() <ID> <ENDLINE>
+}
+
+public void nt_Var() :
+{}
+{
+  <ID>
+}
+
+public void nt_ExpList() :
+{}
+{
+  (nt_Exp() (nt_ExpRest())*)*
+}
+
+public void nt_ExpRest() :
+{}
+{
+  <COMMA> nt_Exp()
+}
 
 public void eof() :
 {}

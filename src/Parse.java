@@ -1,4 +1,3 @@
-
 /**
  * A harness to test the Moopl parser.
  */
@@ -20,7 +19,7 @@ public class Parse {
         }
         System.out.print("parsing...");
         System.out.flush();
-        parser.nt_Program();
+        parser.nt_FieldDecl();
         parser.eof();
         System.out.println("...parse completed.");
     }

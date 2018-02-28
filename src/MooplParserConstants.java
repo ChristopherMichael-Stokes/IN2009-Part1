@@ -19,7 +19,7 @@ public interface MooplParserConstants {
   /** RegularExpression Id. */
   int RETURN = 12;
   /** RegularExpression Id. */
-  int BOOLEAN = 13;
+  int BOOL = 13;
   /** RegularExpression Id. */
   int TRUE = 14;
   /** RegularExpression Id. */
@@ -69,7 +69,7 @@ public interface MooplParserConstants {
   /** RegularExpression Id. */
   int CLOSEPAREN = 37;
   /** RegularExpression Id. */
-  int ENDSTAT = 38;
+  int ENDLINE = 38;
   /** RegularExpression Id. */
   int NOT = 39;
   /** RegularExpression Id. */
