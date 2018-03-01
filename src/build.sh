@@ -1,7 +1,8 @@
 #!/bin/bash
-
-src='~/Documents/IN2009-Tutorials/Moople-Cwk1/src'
+echo "compiling javacc"
 javacc Moopl-grammar.jj
+printf "\ncompiling java source\n"
 javac *.java
-
-alias testTokens='java src/TestTokens'
+printf "\ntesting tokens\n"
+java TestTokens tokens
+echo "done"

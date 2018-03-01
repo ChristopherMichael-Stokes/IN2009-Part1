@@ -19,7 +19,7 @@ public class Parse {
         }
         System.out.print("parsing...");
         System.out.flush();
-        parser.nt_FieldDecl();
+        parser.nt_Var();
         parser.eof();
         System.out.println("...parse completed.");
     }

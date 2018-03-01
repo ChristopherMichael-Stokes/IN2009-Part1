@@ -69,7 +69,7 @@ public interface MooplParserConstants {
   /** RegularExpression Id. */
   int CLOSEPAREN = 37;
   /** RegularExpression Id. */
-  int ENDLINE = 38;
+  int ENDST = 38;
   /** RegularExpression Id. */
   int NOT = 39;
   /** RegularExpression Id. */

@@ -1,6 +1,7 @@
 #!/bin/bash
+javacc *.j
 rm *.class
-javac *.java > /dev/null
+javac *.java 
 
 function parse { 
   echo parsing nt_$1\(\)
@@ -12,6 +13,9 @@ function parse {
   done
 }
 
-parse Var abc123330_ LF_0___3 g78
-parse Type int abc12330_ 'arrayof(int)' 'arrayof(Integer)' boolean
-parse FieldDecl  'int ab1;' 'boolean a2b;'
+parse ExpList "true, false, self.length" ""
+parse ExpRest ", true"
+parse PrimaryExp 1024 true false abc123 self "new arrayof(int)[true and self]" "new object abc123()" "! true" "isnull self" "(true)"
+parse FieldDecl  'int x;' 'boolean x;'
+parse Type int abc1234_ 'arrayof(int)' 'arrayof(Integer)' boolean
+parse Var abc12340  nt_var Vector 

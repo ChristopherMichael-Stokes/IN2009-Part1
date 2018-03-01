@@ -56,7 +56,7 @@ TOKEN : /* Define the Moopl tokens here. */
 | < CLOSEBRACE: "}" >
 | < OPENPAREN: "(" >
 | < CLOSEPAREN: ")" >
-| < ENDLINE: ";" >
+| < ENDST: ";" >
 | < NOT: "!" >
 
 // LOTS OF TOKENS MISSING HERE!
@@ -105,7 +105,7 @@ public void testTokens() :
       | t = <CLOSEBRACE>
       | t = <OPENPAREN>
       | t = <CLOSEPAREN>
-      | t = <ENDLINE>
+      | t = <ENDST>
       | t = <NOT>
 
         // ADD YOUR OWN TOKENS HERE AS YOU DEFINE EACH ONE
@@ -149,13 +149,15 @@ public void nt_MethodDecl() :
 public void nt_FunDecl() :
 {}
 {
-  <FUN> // TODO: ADD MISSING CASES
+  <FUN> nt_Type() <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  (nt_Statement())* <RETURN> nt_Exp() <ENDST> <CLOSEBRACE>
 }
 
 public void nt_ProcDecl() :
 {}
 {
-  <PROC> // TODO: ADD MISSING CASES
+  <PROC> <ID> <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  (nt_Statement())* <CLOSEBRACE>
 }
 
 public void nt_PrimaryExp() :
@@ -170,16 +172,15 @@ public void nt_PrimaryExp() :
   <NEW> <ARRAYOF> <OPENPAREN> nt_Type() <CLOSEPAREN> <OPENSBR> nt_Exp() <CLOSESBR>
 | <NEW> <OBJECT> <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>
 | <NOT> nt_PrimaryExp()
+| <ISNULL> nt_PrimaryExp()
 | <OPENPAREN> nt_Exp() <CLOSEPAREN>
 
 }
 
-// TODO: ADD MISSING NON_TERMINALS
-
 public void nt_FormalList() :
 {}  
 {
-  (nt_Type() <ID> (nt_FormalRest())*)*
+  (nt_Type() <ID> (nt_FormalRest())*)?
 }
 
 public void nt_FormalRest() :
@@ -189,18 +190,18 @@ public void nt_FormalRest() :
 }
 
 public void nt_Statement() :
-{} //TODO : IMPLEMENT
+{} 
 {
   nt_Block()
 | LOOKAHEAD (2) //type and var could both start with ID
-  nt_Type() <ID> <ENDLINE>
+  nt_Type() <ID> <ENDST>
 | LOOKAHEAD (2) //primaryexp could start with ID, but won't have an EQUALS after
-  nt_Var() <EQUALS> nt_Exp() <ENDLINE>
-| nt_PrimaryExp() (<OPENSBR> nt_Exp() <CLOSESBR> <EQUALS> nt_Exp() <ENDLINE>
+  nt_Var() <EQUALS> nt_Exp() <ENDST>
+| nt_PrimaryExp() (<OPENSBR> nt_Exp() <CLOSESBR> <EQUALS> nt_Exp() <ENDST>
                   | <DOT> <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>)
 | <IF> <OPENPAREN> <THEN> nt_Block() <ELSE> nt_Block()
 | <WHILE> <OPENPAREN> nt_Exp() <CLOSEPAREN> <DO> nt_Block()
-| <OUTPUT> nt_Exp() <ENDLINE>
+| <OUTPUT> nt_Exp() <ENDST>
 }
 
 public void nt_Block() :
@@ -210,9 +211,10 @@ public void nt_Block() :
 }
 
 public void nt_Exp() :
-{} //TODO : IMPLEMENT
+{} 
 {
-  <ID>
+  nt_PrimaryExp() (<OP> nt_PrimaryExp() | nt_PrimaryExp() <OPENSBR> nt_Exp() <CLOSESBR>
+    | LOOKAHEAD (2) <DOT> <LENGTH> | <DOT> <ID> <OPENBRACE> nt_ExpList() <CLOSEBRACE>)?
 }
 
 public void nt_Type() :
@@ -227,7 +229,7 @@ public void nt_Type() :
 public void nt_FieldDecl() :
 {}
 {
-  nt_Type() <ID> <ENDLINE>
+  nt_Type() <ID> <ENDST>
 }
 
 public void nt_Var() :
@@ -239,7 +241,7 @@ public void nt_Var() :
 public void nt_ExpList() :
 {}
 {
-  (nt_Exp() (nt_ExpRest())*)*
+  (nt_Exp() (nt_ExpRest())*)?
 }
 
 public void nt_ExpRest() :
