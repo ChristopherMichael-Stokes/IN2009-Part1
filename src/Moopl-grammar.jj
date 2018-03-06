@@ -149,7 +149,7 @@ public void nt_MethodDecl() :
 public void nt_FunDecl() :
 {}
 {
-  <FUN> nt_Type() <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  <FUN> nt_Type() <ID> <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
   (nt_Statement())* <RETURN> nt_Exp() <ENDST> <CLOSEBRACE>
 }
 
@@ -198,8 +198,8 @@ public void nt_Statement() :
 | LOOKAHEAD (2) //primaryexp could start with ID, but won't have an EQUALS after
   nt_Var() <EQUALS> nt_Exp() <ENDST>
 | nt_PrimaryExp() (<OPENSBR> nt_Exp() <CLOSESBR> <EQUALS> nt_Exp() <ENDST>
-                  | <DOT> <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>)
-| <IF> <OPENPAREN> <THEN> nt_Block() <ELSE> nt_Block()
+                  | <DOT> <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN> <ENDST>)
+| <IF> <OPENPAREN> nt_Exp() <CLOSEPAREN> <THEN> nt_Block() <ELSE> nt_Block()
 | <WHILE> <OPENPAREN> nt_Exp() <CLOSEPAREN> <DO> nt_Block()
 | <OUTPUT> nt_Exp() <ENDST>
 }
@@ -213,8 +213,8 @@ public void nt_Block() :
 public void nt_Exp() :
 {} 
 {
-  nt_PrimaryExp() (<OP> nt_PrimaryExp() | nt_PrimaryExp() <OPENSBR> nt_Exp() <CLOSESBR>
-    | LOOKAHEAD (2) <DOT> <LENGTH> | <DOT> <ID> <OPENBRACE> nt_ExpList() <CLOSEBRACE>)?
+  nt_PrimaryExp() (<OP> nt_PrimaryExp() | <OPENSBR> nt_Exp() <CLOSESBR>
+    | <DOT> (<LENGTH> | <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>))?
 }
 
 public void nt_Type() :
