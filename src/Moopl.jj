@@ -1,0 +1,316 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(MooplParser)
+  import syntaxtree.*;
+  import syntaxtree.interp.*;
+  import java.util.List;
+  import java.util.LinkedList;
+  import java.util.ArrayList;
+  public class MooplParser {
+  }
+PARSER_END(MooplParser)
+
+SKIP : /* Define white-space and comments here */
+{
+    " "
+  | "\t"
+  | "\n"
+  | "\r"
+  | "\f"
+  | < "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n") >
+  | <"/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+TOKEN : /* Define the Moopl tokens here. */
+{
+//keyword
+  < PROC: "proc" >
+| < FUN: "fun" >
+| < CLASS: "class" >
+| < EXTENDS: "extends" >
+| < RETURN: "return" >
+| < BOOL: "boolean" >
+| < TRUE: "true" >
+| < FALSE: "false" >
+| < SELF: "self" >
+| < INT: "int" >
+| < ARRAYOF: "arrayof" >
+| < IF: "if" >
+| < THEN: "then" >
+| < ELSE: "else" >
+| < WHILE: "while" >
+| < DO: "do" >
+| < OUTPUT: "output" >
+| < LENGTH: "length" >
+| < NEW: "new" >
+| < OBJECT: "object" >
+| < ISNULL: "isnull" >
+//punctuation
+| < DOT: "." >
+| < COMMA: "," >
+| < EQUALS: "=" >
+| < OPENSBR: "[" >
+| < CLOSESBR: "]" >
+| < OPENBRACE: "{" >
+| < CLOSEBRACE: "}" >
+| < OPENPAREN: "(" >
+| < CLOSEPAREN: ")" >
+| < ENDST: ";" >
+| < NOT: "!" >
+
+// LOTS OF TOKENS MISSING HERE!
+
+| < OP: ("and"|"div"|"<"|"=="|"+"|"-"|"*") >
+| < INTEGER_LITERAL: (["0"-"9"])+ >
+| < ID: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])* >
+}
+
+/*
+ * TOKEN tester
+ */
+public void testTokens() :
+{
+  Token t;
+}
+{
+  ( ( ( t = <PROC>
+      | t = <FUN>
+      | t = <CLASS>
+      | t = <OP>
+      | t = <EXTENDS>
+      | t = <RETURN>
+      | t = <BOOL>
+      | t = <TRUE>
+      | t = <FALSE>
+      | t = <SELF>
+      | t = <INT>
+      | t = <ARRAYOF>
+      | t = <IF>
+      | t = <THEN>
+      | t = <ELSE>
+      | t = <WHILE>
+      | t = <DO>
+      | t = <OUTPUT>
+      | t = <LENGTH>
+      | t = <NEW>
+      | t = <OBJECT>
+      | t = <ISNULL>
+      | t = <DOT>
+      | t = <COMMA>
+      | t = <EQUALS>
+      | t = <OPENSBR>
+      | t = <CLOSESBR>
+      | t = <OPENBRACE>
+      | t = <CLOSEBRACE>
+      | t = <OPENPAREN>
+      | t = <CLOSEPAREN>
+      | t = <ENDST>
+      | t = <NOT>
+
+        // ADD YOUR OWN TOKENS HERE AS YOU DEFINE EACH ONE
+      )
+      { System.out.println("Recognised as valid token: " + t.image); }
+    )
+  | ( t = <INTEGER_LITERAL>
+      { System.out.println("Recognised as INTEGER_LITERAL: " + t.image); }
+    )
+  | ( t = <ID>
+      { System.out.println("Recognised as ID: " + t.image); }
+    )
+  )*
+}
+
+
+/************************************
+ * The Moopl grammar starts here *
+ ************************************/
+
+
+public void nt_Program() :
+{}
+{
+  (nt_ProcDecl())+ (nt_ClassDecl())*
+}
+
+public void nt_ClassDecl() :
+{}
+{ 
+  <CLASS> <ID> (<OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>
+  | <EXTENDS> <ID> <OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>)
+}
+
+public void nt_MethodDecl() :
+{}
+{
+  nt_ProcDecl() | nt_FunDecl()
+}
+
+public void nt_FunDecl() :
+{}
+{
+  <FUN> nt_Type() <ID> <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  (nt_Statement())* <RETURN> nt_Exp() <ENDST> <CLOSEBRACE>
+}
+
+public void nt_ProcDecl() :
+{}
+{
+  <PROC> <ID> <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  (nt_Statement())* <CLOSEBRACE>
+}
+
+public Exp nt_PrimaryExp() :
+{
+  List<Exp> el;
+  Exp e;
+  Type t;
+  Token tok;
+  Var v;
+}
+{
+  tok=<INTEGER_LITERAL> { return new ExpInteger(Integer.parseInt(tok.image)); }
+| <TRUE> { return new ExpTrue(); }
+| <FALSE> { return new ExpFalse(); }
+| v=nt_Var() { return new ExpVar(v); }
+| <SELF> { return new ExpSelf(); }
+| LOOKAHEAD (2) 
+  <NEW> <ARRAYOF> <OPENPAREN> t=nt_Type() <CLOSEPAREN> <OPENSBR> e=nt_Exp() <CLOSESBR>
+  { return new ExpNewArray(t, e); }
+| <NEW> <OBJECT> tok=<ID> <OPENPAREN> el=nt_ExpList() <CLOSEPAREN>
+  { return new ExpNewObject(tok.image, el); }
+| <NOT> e=nt_PrimaryExp() { return new ExpNot(e); }
+| <ISNULL> e=nt_PrimaryExp() { return new ExpIsnull(e); }
+| <OPENPAREN> e=nt_Exp() <CLOSEPAREN> { return e; }
+
+}
+
+public List<Formal> nt_FormalList() :
+{
+  Token tok;
+  Type t;
+  Formal fr;
+  List<Formal> fl = new ArrayList<Formal>();
+}  
+{
+  (t=nt_Type() tok=<ID> { fl.add(new Formal(t, tok.image)); }
+    (fr=nt_FormalRest() { fl.add(fr); })*)?
+  { return fl; }
+}
+
+public Formal nt_FormalRest() :
+{
+  Token tok;	
+  Type t;
+}
+{
+  <COMMA> t=nt_Type() tok=<ID> { return new Formal(t, tok.image); }
+}
+
+public Stm nt_Statement() :
+{
+  StmBlock block, block1;	
+  Type t;
+  Token tok;
+  Var v;
+  Exp e, e1, e2;
+  List<Exp> el;
+} 
+{
+  block=nt_Block() { return block; }
+| LOOKAHEAD (2) //type and var could both start with ID
+  t=nt_Type() tok=<ID> <ENDST> { return new StmVarDecl(t, tok.image); }
+| LOOKAHEAD (2) //primaryexp could start with ID, but won't have an EQUALS after
+  v=nt_Var() <EQUALS> e=nt_Exp() <ENDST> { return new StmAssign(v, e); }
+| e=nt_PrimaryExp() (<OPENSBR> e1=nt_Exp() <CLOSESBR> <EQUALS> e2=nt_Exp() <ENDST>
+  { return new StmArrayAssign(e, e1, e2); }
+  | <DOT> tok=<ID> <OPENPAREN> el=nt_ExpList() <CLOSEPAREN> <ENDST>
+  { return new StmCall(e, tok.image, el); })
+| <IF> <OPENPAREN> e=nt_Exp() <CLOSEPAREN> <THEN> block=nt_Block() <ELSE> block1=nt_Block()
+  { return new StmIf(e, block, block1); }
+| <WHILE> <OPENPAREN> e=nt_Exp() <CLOSEPAREN> <DO> block=nt_Block()
+  { return new StmWhile(e, block); }
+| <OUTPUT> e=nt_Exp() <ENDST> { return new StmOutput(e); }
+}
+
+public StmBlock nt_Block() :
+{
+  Stm stm;
+  List<Stm> block = new ArrayList<Stm>();
+} 
+{
+  <OPENBRACE> (stm=nt_Statement(){ block.add(stm); })* <CLOSEBRACE>
+  { return new StmBlock(block); }
+}
+
+public Exp nt_Exp() :
+{
+  Token tok;
+  Exp pexp1, pexp2;	
+  List<Exp> el;
+} 
+{
+  pexp1=nt_PrimaryExp() (tok=<OP> pexp2=nt_PrimaryExp() 
+  { return new ExpOp(pexp1, ExpOp.Op.valueOf(tok.image), pexp2); }
+    | <OPENSBR> pexp2=nt_Exp() <CLOSESBR>
+    { return new ExpArrayLookup(pexp1, pexp2); }
+    | <DOT> (<LENGTH> { return new ExpArrayLength(pexp1); }
+      | tok=<ID> <OPENPAREN> el=nt_ExpList() <CLOSEPAREN>
+      { return new ExpCall(pexp1, tok.image, el); } 
+    )
+  )?
+}
+
+public Type nt_Type() :
+{
+  Type t;
+  Token tok;
+}
+{
+  <ARRAYOF> <OPENPAREN> t=nt_Type() <CLOSEPAREN> { return new TypeArray(t); }
+| <BOOL> { return new TypeBoolean(); }
+| <INT> { return new TypeInt(); }
+| tok=<ID> { return new TypeClassType(tok.image); }
+}
+
+public FieldDecl nt_FieldDecl() :
+{
+  Type t;
+  Token tok;
+}
+{
+  t=nt_Type() tok=<ID> <ENDST> { return new FieldDecl(t, tok.image); }
+}
+
+public Var nt_Var() :
+{
+  Token t;	
+}
+{
+  t=<ID> { return new Var(t.image); }
+}
+
+public List<Exp> nt_ExpList() :
+{
+  Exp e;
+  List<Exp> el = new ArrayList<Exp>();
+}
+{
+  (e=nt_Exp() { el.add(e); } (e=nt_ExpRest() { el.add(e); } )*)?
+  { return el; }
+}
+
+public Exp nt_ExpRest() :
+{
+  Exp e;
+}
+{
+  <COMMA> e=nt_Exp() { return e; }
+}
+
+public void eof() :
+{}
+{
+  <EOF>
+}

@@ -3,6 +3,7 @@ import syntaxtree.*;
 import syntaxtree.interp.*;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ArrayList;
 
 /** Token Manager. */
 public class MooplParserTokenManager implements MooplParserConstants
