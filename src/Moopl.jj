@@ -5,6 +5,7 @@ options {
 PARSER_BEGIN(MooplParser)
   import syntaxtree.*;
   import syntaxtree.interp.*;
+  import java.util.Arrays;
   import java.util.List;
   import java.util.LinkedList;
   import java.util.ArrayList;
@@ -128,37 +129,68 @@ public void testTokens() :
  ************************************/
 
 
-public void nt_Program() :
-{}
+public Program nt_Program() : //TODO
 {
-  (nt_ProcDecl())+ (nt_ClassDecl())*
+  ProcDecl pd;
+  ClassDecl cd;
+  List<ProcDecl> pl = new ArrayList<ProcDecl>();
+  List<ClassDecl> cl = new ArrayList<ClassDecl>();
+}
+{
+  (pd=nt_ProcDecl(){ pl.add(pd); })+ (cd=nt_ClassDecl(){ cl.add(cd); })*
+  { return new Program(pl, cl); }
 }
 
-public void nt_ClassDecl() :
-{}
+public ClassDecl nt_ClassDecl() :
+{
+  Token t, t1=null;	
+  FieldDecl fd;
+  MethodDecl md;
+  List<FieldDecl> fl = new ArrayList<FieldDecl>();
+  List<MethodDecl> ml = new ArrayList<MethodDecl>();
+}
 { 
-  <CLASS> <ID> (<OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>
-  | <EXTENDS> <ID> <OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>)
+  <CLASS> t=<ID> (<EXTENDS> t1=<ID>)? <OPENBRACE> (fd=nt_FieldDecl(){ fl.add(fd); })* 
+  (md=nt_MethodDecl(){ ml.add(md); })* <CLOSEBRACE>
+  { return t1==null ? new ClassDeclSimple(t.image, fl, ml) :
+      new ClassDeclExtends(t.image, t1.image, fl, ml); }
 }
 
-public void nt_MethodDecl() :
-{}
+public MethodDecl nt_MethodDecl() :
 {
-  nt_ProcDecl() | nt_FunDecl()
+  MethodDecl m;	
+}
+{
+  (m=nt_ProcDecl() | m=nt_FunDecl())
+  { return m; }
 }
 
-public void nt_FunDecl() :
-{}
+public FunDecl nt_FunDecl() : 
 {
-  <FUN> nt_Type() <ID> <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
-  (nt_Statement())* <RETURN> nt_Exp() <ENDST> <CLOSEBRACE>
+  Token tok;
+  Type t;
+  Exp e;
+  List<Formal> fl;
+  List<Stm> sl = new ArrayList<Stm>();
+  Stm st;
+}
+{
+  <FUN> t=nt_Type() tok=<ID> <OPENPAREN> fl=nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  (st=nt_Statement(){ sl.add(st); })* <RETURN> e=nt_Exp() <ENDST> <CLOSEBRACE>
+  { return new FunDecl(t, tok.image, fl, sl, e); }
 }
 
-public void nt_ProcDecl() :
-{}
+public ProcDecl nt_ProcDecl() :
 {
-  <PROC> <ID> <OPENPAREN> nt_FormalList() <CLOSEPAREN> <OPENBRACE>
-  (nt_Statement())* <CLOSEBRACE>
+  Token tok;
+  List<Formal> fl;
+  List<Stm> sl = new ArrayList<Stm>();
+  Stm st;
+}
+{
+  <PROC> tok=<ID> <OPENPAREN> fl=nt_FormalList() <CLOSEPAREN> <OPENBRACE>
+  (st=nt_Statement(){ sl.add(st); })* <CLOSEBRACE>
+  { return new ProcDecl(tok.image, fl, sl); }
 }
 
 public Exp nt_PrimaryExp() :
@@ -244,22 +276,42 @@ public StmBlock nt_Block() :
   { return new StmBlock(block); }
 }
 
+public ExpOp.Op t_Op() :
+{
+  Token t;
+}
+{
+  t=<OP>
+  { switch(t.image) {
+      case "and" : return ExpOp.Op.AND;
+      case "div" : return ExpOp.Op.DIV;
+      case "<" : return ExpOp.Op.LESSTHAN;
+      case "==" : return ExpOp.Op.EQUALS;
+      case "+" : return ExpOp.Op.PLUS;
+      case "-" : return ExpOp.Op.MINUS;
+      case "*" : return ExpOp.Op.TIMES;
+      //default : return null;
+    }
+  }
+}
+
 public Exp nt_Exp() :
 {
   Token tok;
+  boolean pe = true;
   Exp pexp1, pexp2;	
+  ExpOp.Op op;
   List<Exp> el;
 } 
 {
-  pexp1=nt_PrimaryExp() (tok=<OP> pexp2=nt_PrimaryExp() 
-  { return new ExpOp(pexp1, ExpOp.Op.valueOf(tok.image), pexp2); }
+  pexp1=nt_PrimaryExp() (op=t_Op() pexp2=nt_PrimaryExp() 
+  { return new ExpOp(pexp1, op, pexp2); }
     | <OPENSBR> pexp2=nt_Exp() <CLOSESBR>
     { return new ExpArrayLookup(pexp1, pexp2); }
     | <DOT> (<LENGTH> { return new ExpArrayLength(pexp1); }
       | tok=<ID> <OPENPAREN> el=nt_ExpList() <CLOSEPAREN>
-      { return new ExpCall(pexp1, tok.image, el); } 
-    )
-  )?
+      { return new ExpCall(pexp1, tok.image, el); })
+  )? { return pexp1; }
 }
 
 public Type nt_Type() :

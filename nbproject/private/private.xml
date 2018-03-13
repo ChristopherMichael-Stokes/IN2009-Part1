@@ -2,6 +2,13 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/home/chris/modules/language_processors/IN2009-Part1/src/syntaxtree/AST.java</file>
+            <file>file:/home/chris/modules/language_processors/IN2009-Part1/src/syntaxtree/TypeArray.java</file>
+            <file>file:/home/chris/modules/language_processors/IN2009-Part1/src/syntaxtree/ExpNot.java</file>
+            <file>file:/home/chris/modules/language_processors/IN2009-Part1/src/syntaxtree/Var.java</file>
+            <file>file:/home/chris/modules/language_processors/IN2009-Part1/src/syntaxtree/Type.java</file>
+            <file>file:/home/chris/modules/language_processors/IN2009-Part1/src/syntaxtree/ExpOp.java</file>
+        </group>
     </open-files>
 </project-private>

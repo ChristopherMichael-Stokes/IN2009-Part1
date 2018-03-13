@@ -136,8 +136,7 @@ public void nt_Program() :
 public void nt_ClassDecl() :
 {}
 { 
-  <CLASS> <ID> (<OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>
-  | <EXTENDS> <ID> <OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>)
+  <CLASS> <ID> (<EXTENDS> <ID>)? <OPENBRACE> (nt_FieldDecl())* (nt_MethodDecl())* <CLOSEBRACE>
 }
 
 public void nt_MethodDecl() :
@@ -210,10 +209,16 @@ public void nt_Block() :
   <OPENBRACE> (nt_Statement())* <CLOSEBRACE>
 }
 
+public void t_Op() : 
+{}
+{
+  <OP>
+}
+
 public void nt_Exp() :
 {} 
 {
-  nt_PrimaryExp() (<OP> nt_PrimaryExp() | <OPENSBR> nt_Exp() <CLOSESBR>
+  nt_PrimaryExp() (t_Op() nt_PrimaryExp() | <OPENSBR> nt_Exp() <CLOSESBR>
     | <DOT> (<LENGTH> | <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>))?
 }
 
