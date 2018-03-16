@@ -31,7 +31,7 @@ function pretty {
 
 #parsing
 javacc Moopl-grammar.jj
-sed -ie "s|parser.nt_Program()|//parser.nt_Program()|g" PrettyPrint.java
+sed -ie "s|.*parser.nt_Program()|\t\t\t//parser.nt_Program()|g" PrettyPrint.java
 rm *.class
 javac *.java 
 
@@ -40,7 +40,7 @@ examples
 
 #semantic analysis
 javacc Moopl.jj
-sed -ie "s|//parser.nt_Program()|parser.nt_Program()|g" PrettyPrint.java
+sed -ie "s|.*parser.nt_Program()|\t\t\tparser.nt_Program()|g" PrettyPrint.java
 rm *.class
 javac *.java 
 
