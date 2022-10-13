@@ -58,9 +58,7 @@ TOKEN : /* Define the Moopl tokens here. */
 | < CLOSEPAREN: ")" >
 | < ENDST: ";" >
 | < NOT: "!" >
-
-// LOTS OF TOKENS MISSING HERE!
-
+//regex
 | < OP: ("and"|"div"|"<"|"=="|"+"|"-"|"*") >
 | < INTEGER_LITERAL: (["0"-"9"])+ >
 | < ID: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])* >
@@ -107,8 +105,6 @@ public void testTokens() :
       | t = <CLOSEPAREN>
       | t = <ENDST>
       | t = <NOT>
-
-        // ADD YOUR OWN TOKENS HERE AS YOU DEFINE EACH ONE
       )
       { System.out.println("Recognised as valid token: " + t.image); }
     )
@@ -209,16 +205,10 @@ public void nt_Block() :
   <OPENBRACE> (nt_Statement())* <CLOSEBRACE>
 }
 
-public void t_Op() : 
-{}
-{
-  <OP>
-}
-
 public void nt_Exp() :
 {} 
 {
-  nt_PrimaryExp() (t_Op() nt_PrimaryExp() | <OPENSBR> nt_Exp() <CLOSESBR>
+  nt_PrimaryExp() (<OP> nt_PrimaryExp() | <OPENSBR> nt_Exp() <CLOSESBR>
     | <DOT> (<LENGTH> | <ID> <OPENPAREN> nt_ExpList() <CLOSEPAREN>))?
 }
 

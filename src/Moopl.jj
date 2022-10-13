@@ -5,6 +5,7 @@ options {
 PARSER_BEGIN(MooplParser)
   import syntaxtree.*;
   import syntaxtree.interp.*;
+  import static syntaxtree.ExpOp.Op;
   import java.util.Arrays;
   import java.util.List;
   import java.util.LinkedList;
@@ -60,9 +61,7 @@ TOKEN : /* Define the Moopl tokens here. */
 | < CLOSEPAREN: ")" >
 | < ENDST: ";" >
 | < NOT: "!" >
-
-// LOTS OF TOKENS MISSING HERE!
-
+//regex
 | < OP: ("and"|"div"|"<"|"=="|"+"|"-"|"*") >
 | < INTEGER_LITERAL: (["0"-"9"])+ >
 | < ID: ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])* >
@@ -109,8 +108,6 @@ public void testTokens() :
       | t = <CLOSEPAREN>
       | t = <ENDST>
       | t = <NOT>
-
-        // ADD YOUR OWN TOKENS HERE AS YOU DEFINE EACH ONE
       )
       { System.out.println("Recognised as valid token: " + t.image); }
     )
@@ -129,7 +126,7 @@ public void testTokens() :
  ************************************/
 
 
-public Program nt_Program() : //TODO
+public Program nt_Program() : 
 {
   ProcDecl pd;
   ClassDecl cd;
@@ -276,35 +273,26 @@ public StmBlock nt_Block() :
   { return new StmBlock(block); }
 }
 
-public ExpOp.Op t_Op() :
-{
-  Token t;
-}
-{
-  t=<OP>
-  { switch(t.image) {
-      case "and" : return ExpOp.Op.AND;
-      case "div" : return ExpOp.Op.DIV;
-      case "<" : return ExpOp.Op.LESSTHAN;
-      case "==" : return ExpOp.Op.EQUALS;
-      case "+" : return ExpOp.Op.PLUS;
-      case "-" : return ExpOp.Op.MINUS;
-      case "*" : return ExpOp.Op.TIMES;
-      //default : return null;
-    }
-  }
-}
-
 public Exp nt_Exp() :
 {
   Token tok;
   boolean pe = true;
   Exp pexp1, pexp2;	
-  ExpOp.Op op;
+  Op op;
   List<Exp> el;
 } 
 {
-  pexp1=nt_PrimaryExp() (op=t_Op() pexp2=nt_PrimaryExp() 
+  pexp1=nt_PrimaryExp() (tok=<OP>{
+    switch(tok.image) {
+      case "and"	: op=Op.AND; break;
+      case "div"	: op=Op.DIV; break;
+      case "<"		: op=Op.LESSTHAN; break;
+      case "=="		: op=Op.EQUALS; break;
+      case "+"		: op=Op.PLUS; break;
+      case "-"		: op=Op.MINUS; break;
+      case "*"		: op=Op.TIMES; break;
+      default		: op=null;
+    }} pexp2=nt_PrimaryExp() 
   { return new ExpOp(pexp1, op, pexp2); }
     | <OPENSBR> pexp2=nt_Exp() <CLOSESBR>
     { return new ExpArrayLookup(pexp1, pexp2); }
